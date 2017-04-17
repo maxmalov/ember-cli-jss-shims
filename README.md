@@ -1,11 +1,11 @@
-# ember-cli-jss-shim
+# ember-cli-jss-shims
 
 This README outlines the details of collaborating on this Ember addon.
 
 ## Installation
 
-* `git clone <repository-url>` this repository
-* `cd ember-cli-jss-shim`
+* `git clone https://github.com/maxmalov/ember-cli-jss-shims` this repository
+* `cd ember-cli-jss-shims`
 * `npm install`
 * `bower install`
 
