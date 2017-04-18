@@ -3,103 +3,87 @@
 const fs = require('fs');
 const path = require('path');
 const findRoot = require('find-root');
-const mergeTrees = require('broccoli-merge-trees');
-const funnel = require('broccoli-funnel');
+const MergeTrees = require('broccoli-merge-trees');
+const Funnel = require('broccoli-funnel');
 
 function getRoot(pkgName) {
   return findRoot(require.resolve(pkgName));
 }
 
+function lookupApp(app) {
+  while (typeof app.import !== 'function' && app.app) {
+    app = app.app;
+  }
+  return app;
+}
+
 module.exports = {
   name: 'ember-cli-jss-shims',
 
-  included(app) {
-    this._super.included.apply(this, arguments);
+  init() {
+    this._super.init && this._super.init.apply(this, arguments);
     this.jssConfig = this.getConfig();
-    this.app = app;
-
-    this.importDeps();
-    this.importShims();
-
-    return app;
   },
 
   getConfig() {
     const projectConfig = this.project.config(process.env.EMBER_ENV) || {};
     const config = projectConfig.jss || {};
 
-    const plugins = config.plugins || ['jss-preset-default'];
-
-    const finalPlugins = plugins.filter(pluginName => {
-      const pluginFile = path.join(getRoot(pluginName), 'dist', pluginName + '.js');
-
-      if (!fs.existsSync(pluginFile)) {
-        console.warn(this.name + ': Cannot find jss plugin: ' + pluginName);
-        return false;
-      }
-
-      return true;
-    });
+    const includePreset = config.includePresetDefault;
 
     return {
-      plugins: finalPlugins
+      includePresetDefault: !!includePreset
     };
   },
 
-  importDeps() {
-    const vendor = this.treePaths.vendor;
-    const plugins = this.jssConfig.plugins;
+  included(app) {
+    this._super.included.apply(this, arguments);
 
-    this.app.import({
+    app = lookupApp(app);
+
+    const vendor = this.treePaths.vendor;
+    const includePreset = this.jssConfig.includePresetDefault;
+
+    app.import({
       development: vendor + '/jss/jss.js',
       production: vendor + '/jss/jss.min.js'
     });
+    app.import('vendor/ember-cli-jss-shims/jss.js');
 
-    plugins.forEach(pluginName => {
-      this.app.import({
-        development: vendor + '/jss/' + pluginName + '.js',
-        production: vendor + '/jss/' + pluginName + '.min.js'
+    if (includePreset) {
+      app.import({
+        development: vendor + '/jss/jss-preset-default.js',
+        production: vendor + '/jss/jss-preset-default.min.js'
       });
-    });
-  },
-
-  importShims() {
-    this.app.import('vendor/ember-cli-jss-shim/jss.js');
-
-    const plugins = this.jssConfig.plugins;
-
-    if (!plugins.length) {
-      return;
+      app.import('vendor/ember-cli-jss-shims/jss-preset-default.js');
     }
 
-    // FIXME: add more shims for other plugins
-    plugins.forEach(plugin => this.app.import('vendor/ember-cli-jss-shim/' + plugin + '.js'));
+    return app;
   },
 
-  treeForVendor() {
-    const jssTree = funnel(getRoot('jss'), {
+  treeForVendor(tree) {
+    const jssTree = new Funnel(getRoot('jss'), {
       srcDir: 'dist',
       destDir: 'jss',
       include: [/\.js$/]
     });
 
-    const plugins = this.jssConfig.plugins;
+    const includePresetDefault = this.jssConfig.includePresetDefault;
+    const trees = [tree, jssTree];
 
-    if (!plugins.length) {
-      return jssTree;
-    }
-
-    const pluginTrees = plugins.map(pluginName => {
-      return funnel(getRoot(pluginName), {
+    if (includePresetDefault) {
+      const presetTree = new Funnel(getRoot('jss-preset-default'), {
         srcDir: 'dist',
         destDir: 'jss',
         include: [/\.js$/]
       });
-    });
 
-    return mergeTrees(
-      [jssTree].concat(pluginTrees)
-    );
+      trees.push(presetTree);
+    }
+
+    return new MergeTrees(trees, {
+      annotation: 'ember-cli-jss-shims: treeForVendor'
+    });
   }
 
 };

@@ -22,7 +22,9 @@ module.exports = function(environment) {
       // when it is created
     },
 
-    jss: {}
+    jss: {
+      includePresetDefault: true
+    }
   };
 
   if (environment === 'development') {
