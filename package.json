@@ -1,5 +1,5 @@
 {
-  "name": "ember-cli-jss-shims",
+  "name": "@maxmalov/ember-cli-jss-shims",
   "version": "0.0.1",
   "description": "Brings JSS and its plugins to your Ember applications",
   "keywords": [
