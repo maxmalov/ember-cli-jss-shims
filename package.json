@@ -22,7 +22,7 @@
   "dependencies": {
     "broccoli-funnel": "1.1.0",
     "broccoli-merge-trees": "2.0.0",
-    "ember-cli-babel": "^5.1.7",
+    "ember-cli-babel": "^6.0.0",
     "find-root": "1.0.0",
     "jss": "7.0.3",
     "jss-preset-default": "2.0.0"
