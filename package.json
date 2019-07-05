@@ -17,7 +17,9 @@
   "scripts": {
     "build": "ember build",
     "start": "ember server",
-    "test": "ember try:each"
+    "test": "ember try:each",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "broccoli-funnel": "1.1.0",
@@ -25,7 +27,8 @@
     "ember-cli-babel": "^6.0.0",
     "find-root": "1.0.0",
     "jss": "7.0.3",
-    "jss-preset-default": "2.0.0"
+    "jss-preset-default": "2.0.0",
+    "snyk": "^1.192.0"
   },
   "devDependencies": {
     "broccoli-asset-rev": "^2.4.5",
@@ -53,5 +56,6 @@
   },
   "ember-addon": {
     "configPath": "tests/dummy/config"
-  }
+  },
+  "snyk": true
 }
